@@ -429,26 +429,13 @@ knitr::kable(data.frame(
 people who do visit a physician the counts are clearly overdispersed relative
 to the Poisson.
 
-::: {.callout-important}
-**TO DO (David — write in your own words, then delete this box):**
-interpret the main effects in plain language using Tables 8 and 9, as in
-Appendix A.4 of the project description. Cover (i) the count part as
-incidence rate ratios, e.g. what an IRR of 1.22 for `hospital` means for the
-expected number of visits, the effects of poor/excellent health versus
-average, chronic conditions, gender, education and insurance; and (ii) the
-zero part as odds ratios of being a structural "never-visit" zero: which
-covariates matter (chronic conditions, insurance, gender, education) and
-what their direction means for who never sees a physician.
-:::
+The count portion of the ZINB model describes the expected number of physician visits for individuals belonging to the negative binomial component, holding the other variables constant. The estimated incidence rate ratio (IRR) for hospital stays is 1.22, suggesting that each additional hospital stay is associated with approximately a 22% increase in the expected number of physician visits. Compared to individuals reporting average health, those reporting poor health have approximately 33% more expected visits, while those reporting excellent health have approximately 27% fewer expected visits. Additionally, each additional chronic condition is associated with approximately 14% more expected visits. Males have approximately 8% fewer expected visits than females, while each additional year of education is associated with approximately 2% more expected visits. Finally, individuals with private insurance have approximately 13% more expected visits than those without private insurance. All of these effects are statistically significant at the 5% significance level.
+
+The zero portion of the ZINB model describes the odds that an individual belongs to the structural-zero group, meaning that they do not make any physician visits during the observed period. The estimated odds ratio for chronic conditions is 0.29, suggesting that each additional chronic condition is associated with approximately 71% lower odds of being a structural zero. Similarly, individuals with private insurance have approximately 69% lower odds of being a structural zero than those without insurance. In contrast, males have approximately 91% higher odds of being a structural zero than females. Each additional year of education is associated with approximately 8% lower odds of being a structural zero. These effects are statistically significant at the 5% significance level. The estimated odds ratio for hospital stays is 0.45, but its p-value of 0.0571 exceeds 0.05, so there is insufficient evidence that hospital stays affect the odds of being a structural zero. Overall, these results suggest that individuals with more chronic conditions, private insurance, and more education are less likely to belong to the structural-zero group, while males are more likely to belong to this group.
 
 ## Preferred model
 
-::: {.callout-important}
-**TO DO (David — write in your own words, then delete this box):** say which
-model you prefer and why, using Table 7 and Figure 1 (log-likelihood, AIC,
-BIC, observed vs. expected zeros), and contrast with the bioChemists example
-in Appendix A, where BIC preferred the NB model.
-:::
+Based on the results in Table 7, the ZINB model is preferred for the NMES1988 data. The ZINB model has the largest log-likelihood of −12,090.7, compared to −12,170.6 for the NB model and −17,971.6 for the Poisson model. Additionally, the ZINB model has the lowest AIC of 24,211.4 and BIC of 24,307.3, suggesting that the improvement in fit justifies the additional parameters. The data contain 683 individuals with zero physician visits, while the Poisson model predicts only 46.7 zeros and the NB model predicts approximately 608 zeros. In contrast, the ZINB model predicts approximately 709 zeros, which is substantially closer to the observed count. These results, along with the distributional comparison in Figure 1, suggest that the ZINB model better captures both the overdispersion and the excess zeros in the data. Unlike the bioChemists example in Appendix A, where BIC preferred the simpler NB model, both AIC and BIC favor the ZINB model for NMES1988. Therefore, the ZINB model provides the most appropriate fit among the three models considered.
 
 # Discussion
 
@@ -469,18 +456,7 @@ offsets in the zero-inflation model.
 
 # AI-use statement
 
-::: {.callout-important}
-**TO DO (David — write this yourself, then delete this box).** Required by
-Section 6.1 item 8: how you used Claude Code (what you asked it to do), what
-you verified yourself, and one example where you had to correct or reject
-its output. A candidate example from this project: the first version of the
-NB log-likelihood was typed directly from the formula in Section 2.1; on
-Poisson-like data it suffered floating-point cancellation for large
-$\theta$, so `nbreg()` failed to converge until the formula was rewritten
-with `dnbinom(log = TRUE)` and cancellation-free forms of $U$ and $H$.
-Another: the first `devtools::check()` failed because the S3 methods did not
-import the `stats` generics.
-:::
+I used Claude Code to assist with developing the R package, including implementing the IRLS, Newton–Raphson, and EM algorithms, organizing the package functions, and preparing documentation and tests. I checked the mathematical formulas used in the algorithms and compared the fitted coefficients, standard errors, and log-likelihoods against `MASS::glm.nb()` and `pscl::zeroinfl()`. I also examined convergence behavior and used a simulation study to check whether the ZINB estimator recovered the true parameter values. One issue that arose during development involved the negative binomial log-likelihood. The initial expression was numerically unstable when the dispersion parameter became large, leading to convergence problems for nearly Poisson data. To address this, the likelihood calculation was changed to use `dnbinom(log = TRUE)`, and the score and Hessian expressions were rewritten in numerically stable forms. The updated implementation was then checked against the reference functions. Overall, Claude Code was useful for implementing and testing the package, but I used mathematical derivations and numerical comparisons to evaluate the results rather than relying on the generated code alone.
 
 # References
 
