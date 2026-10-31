@@ -67,7 +67,9 @@ used.
 EM does not produce standard errors. They are obtained by inverting the
 negative Hessian of the observed-data log-likelihood with respect to
 \eqn{(\beta, \gamma, \log\theta)}{(beta, gamma, log theta)} at the
-estimates, computed with \code{\link[numDeriv:hessian]{numDeriv::hessian()}}.
+estimates. By default the Hessian is computed from analytic second
+derivatives; \code{zinbreg_control(hessian = "numeric")} uses
+\code{\link[numDeriv:hessian]{numDeriv::hessian()}} instead.
 }
 \examples{
 # Simulated ZINB data

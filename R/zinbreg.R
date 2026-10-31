@@ -20,7 +20,9 @@
 #' EM does not produce standard errors. They are obtained by inverting the
 #' negative Hessian of the observed-data log-likelihood with respect to
 #' \eqn{(\beta, \gamma, \log\theta)}{(beta, gamma, log theta)} at the
-#' estimates, computed with [numDeriv::hessian()].
+#' estimates. By default the Hessian is computed from analytic second
+#' derivatives; `zinbreg_control(hessian = "numeric")` uses
+#' [numDeriv::hessian()] instead.
 #'
 #' @param formula A two-part formula `y ~ x1 + x2 | z1 + z2`: count-model
 #'   covariates before `|`, zero-model covariates after it. Without `|`, the
@@ -156,8 +158,12 @@ zinbreg <- function(formula, data, offset, control = zinbreg_control()) {
   par_hat <- c(fit$beta, fit$gamma, log(fit$theta))
   par_names <- c(paste0("count_", colnames(X)), paste0("zero_", colnames(Z)),
                  "Log(theta)")
-  H <- numDeriv::hessian(zinb_loglik_par, par_hat, X = X, Z = Z, y = y,
-                         offset = off)
+  H <- if (control$hessian == "analytic") {
+    zinb_hessian(par_hat, X, Z, y, off)          # derived in R/hessian.R
+  } else {
+    numDeriv::hessian(zinb_loglik_par, par_hat, X = X, Z = Z, y = y,
+                      offset = off)
+  }
   vc_full <- tryCatch(solve(-H), error = function(e) {
     warning("the Hessian is singular; standard errors are not available",
             call. = FALSE)
@@ -210,16 +216,23 @@ zinbreg <- function(formula, data, offset, control = zinbreg_control()) {
 #' @param nb_maxit Maximum number of outer (theta / beta) iterations in each
 #'   count M-step.
 #' @param theta_warn Warn if the estimated theta exceeds this value.
+#' @param hessian How to compute the Hessian for the standard errors:
+#'   `"analytic"` (default, exact second derivatives) or `"numeric"`
+#'   (finite differences with [numDeriv::hessian()]).
 #' @param trace Logical; if `TRUE`, print the observed-data log-likelihood
 #'   and its change at each EM iteration.
 #'
 #' @return A list of control settings.
 #' @examples
 #' zinbreg_control(epsilon = 1e-10, trace = TRUE)
+#' zinbreg_control(hessian = "numeric")
 #' @export
 zinbreg_control <- function(epsilon = 1e-8, maxit = 5000, irls_maxit = 100,
                             theta_maxit = 100, nb_maxit = 100,
-                            theta_warn = 1e4, trace = FALSE) {
+                            theta_warn = 1e4,
+                            hessian = c("analytic", "numeric"),
+                            trace = FALSE) {
+  hessian <- match.arg(hessian)
   if (!is.numeric(epsilon) || length(epsilon) != 1L || epsilon <= 0) {
     stop("'epsilon' must be a single positive number", call. = FALSE)
   }
@@ -233,7 +246,7 @@ zinbreg_control <- function(epsilon = 1e-8, maxit = 5000, irls_maxit = 100,
        irls_maxit = as.integer(irls_maxit),
        theta_maxit = as.integer(theta_maxit),
        nb_maxit = as.integer(nb_maxit), theta_warn = theta_warn,
-       trace = isTRUE(trace))
+       hessian = hessian, trace = isTRUE(trace))
 }
 
 # EM algorithm for the ZINB model, Section 3.2.

@@ -11,6 +11,7 @@ zinbreg_control(
   theta_maxit = 100,
   nb_maxit = 100,
   theta_warn = 10000,
+  hessian = c("analytic", "numeric"),
   trace = FALSE
 )
 }
@@ -31,6 +32,10 @@ count M-step.}
 
 \item{theta_warn}{Warn if the estimated theta exceeds this value.}
 
+\item{hessian}{How to compute the Hessian for the standard errors:
+\code{"analytic"} (default, exact second derivatives) or \code{"numeric"}
+(finite differences with \code{\link[numDeriv:hessian]{numDeriv::hessian()}}).}
+
 \item{trace}{Logical; if \code{TRUE}, print the observed-data log-likelihood
 and its change at each EM iteration.}
 }
@@ -42,4 +47,5 @@ Control settings for zinbreg()
 }
 \examples{
 zinbreg_control(epsilon = 1e-10, trace = TRUE)
+zinbreg_control(hessian = "numeric")
 }
