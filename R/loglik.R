@@ -23,3 +23,30 @@
 nb_loglik <- function(y, mu, theta, a = 1) {
   sum(a * stats::dnbinom(y, size = theta, mu = mu, log = TRUE))
 }
+
+# ZINB observed-data log-likelihood, Section 2.2:
+#   l(beta, gamma, theta) =
+#       sum_{i: y_i = 0} log[ pi_i + (1 - pi_i) f_NB(0; mu_i, theta) ]
+#     + sum_{i: y_i > 0} [ log(1 - pi_i) + log f_NB(y_i; mu_i, theta) ]
+# where f_NB(0; mu, theta) = (theta / (theta + mu))^theta,
+# log mu_i = x_i' beta + o_i and logit pi_i = z_i' gamma.
+# f_NB is computed with dnbinom() for numerical stability (see nb_loglik()).
+zinb_loglik <- function(y, mu, theta, pi) {
+  f0 <- stats::dnbinom(0, size = theta, mu = mu)
+  ll_zero <- log(pi + (1 - pi) * f0)
+  ll_pos <- log1p(-pi) + stats::dnbinom(y, size = theta, mu = mu, log = TRUE)
+  sum(ifelse(y == 0, ll_zero, ll_pos))
+}
+
+# The same log-likelihood as a function of the stacked parameter vector
+# par = (beta, gamma, log theta). Used for the Hessian (standard errors).
+zinb_loglik_par <- function(par, X, Z, y, offset) {
+  p <- ncol(X)
+  q <- ncol(Z)
+  beta <- par[seq_len(p)]
+  gamma <- par[p + seq_len(q)]
+  theta <- exp(par[p + q + 1])
+  mu <- exp(drop(X %*% beta) + offset)
+  pi <- stats::plogis(drop(Z %*% gamma))
+  zinb_loglik(y, mu, theta, pi)
+}

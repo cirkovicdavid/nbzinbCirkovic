@@ -2,10 +2,14 @@
 
 export(nbreg)
 export(nbreg_control)
+export(zinbreg)
+export(zinbreg_control)
+importFrom(Formula,as.Formula)
 importFrom(stats,
   .getXlevels,
   model.frame,
   model.matrix,
   model.offset,
-  model.response
+  model.response,
+  terms
 )

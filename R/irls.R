@@ -140,3 +140,39 @@ theta_newton <- function(y, mu, a, theta, tol = 1e-8, maxit = 100,
   }
   list(theta = theta, iter = iter, converged = converged)
 }
+
+# IRLS for the zero part of the ZINB M-step, Section 3.2.
+# Maximizes sum_i [ tau_i log pi_i + (1 - tau_i) log(1 - pi_i) ] over gamma,
+# with logit pi_i = z_i' gamma. This is logistic regression with a
+# fractional response tau_i in [0, 1]. For the logit link
+# d pi / d eta = pi (1 - pi) and V(pi) = pi (1 - pi), so Section 3.2 gives
+#   w_i = pi_i (1 - pi_i),
+#   z_i = z_i' gamma + (tau_i - pi_i) / (pi_i (1 - pi_i)),
+#   gamma(t+1) = (Z' W Z)^(-1) Z' W z.
+# gamma = NULL starts from pi_i = (tau_i + 0.5) / 2, which keeps the start
+# strictly inside (0, 1).
+irls_logit <- function(Z, tau, gamma = NULL, tol = 1e-8, maxit = 100) {
+  if (is.null(gamma)) {
+    eta <- stats::qlogis((tau + 0.5) / 2)
+  } else {
+    eta <- drop(Z %*% gamma)
+  }
+  converged <- FALSE
+  for (iter in seq_len(maxit)) {
+    pi <- stats::plogis(eta)
+    # w_i = pi_i (1 - pi_i), bounded away from 0 so the division below is
+    # safe if some pi_i are numerically 0 or 1.
+    w <- pmax(pi * (1 - pi), .Machine$double.eps)
+    z <- eta + (tau - pi) / w
+    gamma_new <- wls_solve(Z, z, w)
+    eta <- drop(Z %*% gamma_new)
+    if (!is.null(gamma) && max(abs(gamma_new - gamma)) < tol) {
+      gamma <- gamma_new
+      converged <- TRUE
+      break
+    }
+    gamma <- gamma_new
+  }
+  list(gamma = gamma, pi = stats::plogis(eta), iter = iter,
+       converged = converged)
+}
