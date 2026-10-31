@@ -2,3 +2,6 @@
 .Rhistory
 .RData
 .DS_Store
+vignettes/articles/*.pdf
+vignettes/articles/*_files/
+vignettes/articles/*.tex
