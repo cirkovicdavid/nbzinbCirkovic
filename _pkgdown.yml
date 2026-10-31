@@ -1,0 +1,18 @@
+url: https://cirkovicdavid.github.io/nbzinbCirkovic/
+destination: docs
+template:
+  bootstrap: 5
+
+reference:
+- title: Model fitting
+  contents:
+  - nbreg
+  - zinbreg
+- title: Control settings
+  contents:
+  - nbreg_control
+  - zinbreg_control
+- title: Methods
+  contents:
+  - nbreg-methods
+  - zinbreg-methods

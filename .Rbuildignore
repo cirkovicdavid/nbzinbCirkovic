@@ -3,3 +3,7 @@
 ^project-docs$
 ^CLAUDE\.md$
 ^LICENSE\.md$
+^\.github$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$

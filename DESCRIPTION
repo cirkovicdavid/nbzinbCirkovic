@@ -17,3 +17,5 @@ Imports:
     Formula,
     numDeriv,
     stats
+URL: https://github.com/cirkovicdavid/nbzinbCirkovic, https://cirkovicdavid.github.io/nbzinbCirkovic/
+BugReports: https://github.com/cirkovicdavid/nbzinbCirkovic/issues
