@@ -7,5 +7,5 @@
 ^_pkgdown\.yml$
 ^docs$
 ^pkgdown$
-^vignettes/articles$
+^vignettes$
 ^report$
