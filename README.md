@@ -31,6 +31,15 @@ STA 651 final project (Fall 2026), David Cirkovic.
 devtools::install_github("cirkovicdavid/nbzinbCirkovic")
 ```
 
+Since devtools 2.5.0, `install_github()` needs the `remotes` package; if
+the command above reports that "remotes" is required, run
+`install.packages("remotes")` first, or use either of
+
+```r
+remotes::install_github("cirkovicdavid/nbzinbCirkovic")
+pak::pak("cirkovicdavid/nbzinbCirkovic")
+```
+
 ## Usage
 
 ```r
